@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { Share2, ArrowUpRight, ArrowDownLeft, Wallet } from "lucide-react";
 import { useStore } from "../data/store";
-import { metricas, type Config } from "../domain/gmn";
+import { abordagemSugerida, lerPerfil, lerProblemas, metricas, type Config } from "../domain/gmn";
 import type { ItemPonte } from "../data/banco";
 import { Botao, Campo, Cartao, Entrada, Selo, Vazio, useAcao } from "../ui/kit";
 import { Cabecalho, Pagina } from "./Shell";
@@ -46,7 +46,7 @@ function Bloco({ r, v, d, tom }: { r: string; v: string; d?: string; tom?: "ok" 
 }
 
 export function Compartilhadas() {
-  const { banco, acoes, empresas } = useStore();
+  const { banco, acoes, empresas, config } = useStore();
   const acao = useAcao();
   const [itens, setItens] = useState<ItemPonte[] | null>(null);
   const carregar = () => banco.lerPonte().then(setItens);
@@ -68,7 +68,9 @@ export function Compartilhadas() {
                   <p className="text-[13px] text-muted">{i.motivo}</p>
                   {i.status === "pendente" ? (
                     <div className="mt-2 flex gap-2">
-                      <Botao tamanho="sm" variante="primario" onClick={() => acao(async () => { const id = await acoes.salvarEmpresa({ nome: String(e.nome ?? ""), cidade: String(e.cidade ?? ""), telefone: String(e.telefone ?? ""), origem: "Painel principal", etapa: "aguardando_ligacao", chave: i.chave }); await banco.decidirPonte(i.id, "aceita"); await carregar(); irEmpresa(id); }, "Empresa adicionada ao funil")}>Aceitar</Botao>
+                      <Botao tamanho="sm" variante="primario" onClick={() => acao(async () => { const r = i.empresa as Record<string, unknown>;
+                        const problemas = lerProblemas(r.problemas);
+                        const id = await acoes.salvarEmpresa({ nome: String(e.nome ?? ""), segmento: String(r.segmento ?? ""), cidade: String(e.cidade ?? ""), endereco: String(r.endereco ?? ""), telefone: String(e.telefone ?? ""), site: String(r.site ?? ""), perfil: lerPerfil(r.perfil), problemas, abordagem: abordagemSugerida(String(e.nome ?? ""), problemas, config.nome), origem: "Painel principal", etapa: "aguardando_ligacao", chave: i.chave }); await banco.decidirPonte(i.id, "aceita"); await carregar(); irEmpresa(id); }, "Empresa adicionada ao funil")}>Aceitar</Botao>
                       <Botao tamanho="sm" variante="fantasma" onClick={() => acao(async () => { await banco.decidirPonte(i.id, "recusada"); await carregar(); })}>Recusar</Botao>
                     </div>
                   ) : <Selo tom={i.status === "aceita" ? "ok" : "neutro"}>{i.status === "aceita" ? "Aceita" : "Recusada"}</Selo>}
