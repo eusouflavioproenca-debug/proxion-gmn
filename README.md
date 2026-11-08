@@ -44,7 +44,7 @@ Importe este repositório e cadastre:
 
 | Variável | Valor |
 | --- | --- |
-| `ANTHROPIC_API_KEY` | chave da IA. Pode ser a mesma do painel principal ou uma separada, para controlar o custo |
+| `OPENAI_API_KEY` | chave da API da OpenAI (ChatGPT), criada em platform.openai.com. Se preferir o Claude, use `ANTHROPIC_API_KEY` no lugar |
 | `APIFY_TOKEN` | token do Apify, para a busca no Google Maps |
 | `EMAILS_PERMITIDOS` | e-mail de login do Fernando |
 
