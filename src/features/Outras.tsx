@@ -46,16 +46,19 @@ function Bloco({ r, v, d, tom }: { r: string; v: string; d?: string; tom?: "ok" 
 }
 
 export function Compartilhadas() {
-  const { banco, acoes, empresas, config } = useStore();
+  const { banco, acoes, empresas, config, preview } = useStore();
   const acao = useAcao();
   const [itens, setItens] = useState<ItemPonte[] | null>(null);
   const carregar = () => banco.lerPonte().then(setItens);
   useEffect(() => { carregar(); }, [banco]); // eslint-disable-line react-hooks/exhaustive-deps
   const enviadas = (itens ?? []).filter((i) => i.origem === "gmn");
+  const [vinculo, setVinculo] = useState<string | null | undefined>(undefined);
+  useEffect(() => { import("../data/supabase").then(({ supabase }) => supabase().rpc("meu_painel")).then((r) => setVinculo((r?.data as string | null) ?? null), () => setVinculo(undefined)); }, []);
   const recebidas = (itens ?? []).filter((i) => i.destino === "gmn");
   return (
     <Pagina className="max-w-4xl">
       <Cabecalho eyebrow="Integração" titulo="Oportunidades compartilhadas" descricao="Troca com o painel principal da Proxion: empresas sem site vão para lá; oportunidades de Google Meu Negócio vêm para cá." />
+      {vinculo === null && !preview && <p className="mt-5 rounded-xl border border-warn/40 bg-warn/10 p-3 text-[13.5px]">Este usuário ainda não está vinculado ao painel GMN no banco, então nada é enviado nem recebido. No Supabase, rode o comando de vínculo (insert into public.paineis … 'gmn') com o e-mail deste login.</p>}
       <Cartao className="mt-5 p-5">
         <h2 className="flex items-center gap-2 text-[16px] font-semibold"><ArrowDownLeft className="size-[18px] text-brand" /> Recebidas do painel principal</h2>
         {itens === null ? <p className="mt-2 text-[14px] text-muted">Carregando…</p> : recebidas.length === 0 ? <p className="mt-2 text-[14px] text-muted">Nenhuma ainda. Quando o painel principal for conectado, as empresas com problemas no Google chegam aqui.</p> : (

@@ -137,6 +137,7 @@ export class BancoSupabase implements Banco {
     const { error } = await this.sb.from("ponte").insert({ id, ...item, origem: "gmn", status: "pendente" });
     if (!error) return "enviada";
     if (error.code === "23505") return "ja_existia";
+    console.error("[ponte]", error.message);
     return "indisponivel";
   }
   async lerPonte() {
