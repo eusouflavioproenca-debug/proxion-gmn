@@ -111,7 +111,7 @@ export function Radar() {
           {!andamento && <div className="mt-2 flex flex-wrap gap-1.5">{EXEMPLOS.map((x) => <button key={x} type="button" onClick={() => setBusca(x)} className="rounded-full border border-line px-2.5 py-1 text-[12.5px] text-muted">{x}</button>)}</div>}
           <div className="mt-3 flex flex-wrap items-center gap-3">
             {andamento ? (
-              <><Botao variante="primario" carregando disabled>Buscando “{andamento.busca}”… {seg}s</Botao><Botao variante="fantasma" icone={<Square className="size-3.5" />} onClick={() => { gravar(null); setAndamento(null); }}>Parar de acompanhar</Botao><span className="text-[12.5px] text-dim">De 1 a 4 minutos.</span></>
+              <><Botao variante="primario" carregando disabled>Buscando “{andamento.busca}”… {seg}s</Botao><Botao variante="fantasma" icone={<Square className="size-3.5" />} onClick={() => { const run = andamento.run; gravar(null); setAndamento(null); import("../data/supabase").then(({ chamarApi }) => chamarApi(`/api/maps?run=${run}`, { method: "DELETE" })).catch(() => {}); }}>Parar busca</Botao><span className="text-[12.5px] text-dim">De 1 a 4 minutos.</span></>
             ) : <Botao variante="primario" type="submit" icone={<Search className="size-4" />} disabled={busca.trim().length < 2}>Buscar</Botao>}
           </div>
           {semToken && <p className="mt-3 rounded-xl border border-warn/40 bg-warn/10 p-3 text-[13.5px]">Falta cadastrar o <b>APIFY_TOKEN</b> nas variáveis da Vercel deste painel e fazer um Redeploy.</p>}
