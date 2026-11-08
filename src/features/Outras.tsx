@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { Share2, ArrowUpRight, ArrowDownLeft, Wallet } from "lucide-react";
 import { useStore } from "../data/store";
-import { abordagemSugerida, lerPerfil, lerProblemas, metricas, type Config } from "../domain/gmn";
+import { abordagemSugerida, chaveEmpresa, lerPerfil, lerProblemas, metricas, semSiteProprio, type Config } from "../domain/gmn";
 import type { ItemPonte } from "../data/banco";
 import { Botao, Campo, Cartao, Entrada, Selo, Vazio, useAcao } from "../ui/kit";
 import { Cabecalho, Pagina } from "./Shell";
@@ -83,6 +83,21 @@ export function Compartilhadas() {
       <Cartao className="mt-4 p-5">
         <h2 className="flex items-center gap-2 text-[16px] font-semibold"><ArrowUpRight className="size-[18px] text-brand" /> Enviadas ao painel principal <span className="num text-dim">{enviadas.length}</span></h2>
         <p className="text-[13px] text-muted">Empresas sem site próprio encontradas no seu Radar. Ficam aguardando a aprovação do Flávio.</p>
+        {(() => {
+          const enviadasChaves = new Set(enviadas.map((i) => i.chave));
+          const faltam = empresas.filter((e) => e.perfil && semSiteProprio(e) && !enviadasChaves.has(e.chave || chaveEmpresa({ nome: e.nome, cidade: e.cidade })));
+          return faltam.length > 0 ? (
+            <Botao className="mt-3" tamanho="sm" onClick={() => acao(async () => {
+              let n = 0;
+              for (const e of faltam) {
+                const r = await banco.enviarPonte({ tipo: "site", destino: "principal", chave: e.chave || chaveEmpresa({ nome: e.nome, cidade: e.cidade }), empresa: { nome: e.nome, segmento: e.segmento, cidade: e.cidade, uf: e.uf, endereco: e.endereco, telefone: e.telefone, instagram: e.instagram, googleMaps: e.perfil?.link ?? "", nota: e.perfil?.nota ?? null, avaliacoes: e.perfil?.avaliacoes ?? null }, motivo: e.site ? "O link da ficha do Google aponta para rede social, não para um site próprio." : "A ficha do Google não tem site vinculado." });
+                if (r === "enviada") n++;
+              }
+              await carregar();
+              return n;
+            }, "Empresas cadastradas enviadas ao painel principal")}>Enviar {faltam.length} empresa(s) já cadastradas sem site</Botao>
+          ) : null;
+        })()}
         {enviadas.length === 0 ? <Vazio icone={<Share2 className="size-5" />} titulo="Nada enviado ainda" texto="Faça buscas no Radar: as empresas sem site são enviadas automaticamente." /> : (
           <ul className="mt-2 divide-y divide-line/60">
             {enviadas.map((i) => {
